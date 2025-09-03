@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <link th:href="@{/css/style.css}" rel="stylesheet">
-    <title>投稿編集</title>
+    <title>コメント編集</title>
 </head>
 <body>
 <div class="header-contents">
-    <h2>投稿編集</h2>
+    <h2>コメント編集</h2>
 </div>
 <div class="main-contents">
-    <form th:method="put" th:action="@{/update/{id}(id=${formModel.id})}" th:object="${formModel}">
+    <form th:method="put" th:action="@{/comment/update/{id}(id=${formModel.id})}" th:object="${formModel}">
         <div class="form-area">
-            <label>投稿内容</label>
+            <label>コメント内容</label>
                 <textarea class="tweet-box" th:field="*{content}" size="20" maxlength="200"></textarea><br />
-            <input type="submit" value="更新" />
+                <input type="hidden" th:field="*{reportId}" value="${formModel.reportId}">
+                <input type="submit" value="更新" />
         </div>
     </form>
 </div>

@@ -13,6 +13,7 @@
     <a href="/new">
         <button class="new-button" type="button">新規投稿</button>
     </a>
+    <!--投稿表示-->
     <div class="message-icon" th:each="content : ${contents}">
         <div>
             ID : <span th:text="${content.id}"/>
@@ -27,6 +28,32 @@
             <a th:href="@{/edit/{id}(id=${content.id})}">
                 <input type="button" value="編集">
             </a>
+        </div>
+        <!--返信フォーム-->
+        <form method="post" th:action="@{/comment/{id}(id=${content.id})}" th:object="${formModel}">
+            <div class="form-area">
+                <label>返信</label>
+                    <textarea class="tweet-box" th:field="*{content}" size="20" maxlength="200"></textarea><br />
+                <input type="submit" value="返信" />
+            </div>
+        </form>
+        <!--返信表示-->
+        <div th:each="comment : ${comments}">
+            <div th:if="${content.id == comment.reportId}">
+                <div class="text">
+                    コメント : <span th:text="${comment.content}"></span>
+                </div>
+                <!--削除ボタン-->
+                <form th:action="@{/comment/delete/{id}(id=${comment.id})}" th:method="delete">
+                    <input type="submit" value="削除" />
+                </form>
+                <!--編集画面への遷移ボタン-->
+                <div class="edit-button">
+                    <a th:href="@{/comment/edit/{id}(id=${comment.id})}">
+                        <input type="button" value="編集">
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>

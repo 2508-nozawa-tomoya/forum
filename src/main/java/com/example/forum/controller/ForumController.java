@@ -1,6 +1,8 @@
 package com.example.forum.controller;
 
+import com.example.forum.controller.form.CommentForm;
 import com.example.forum.controller.form.ReportForm;
+import com.example.forum.service.CommentService;
 import com.example.forum.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
@@ -16,6 +18,9 @@ public class ForumController {
     @Autowired
     ReportService reportService;
 
+    @Autowired
+    CommentService commentService;
+
     /*
      *投稿内容表示処理
      */
@@ -24,10 +29,18 @@ public class ForumController {
         ModelAndView mav = new ModelAndView();
         //投稿を全件取得
         List<ReportForm> contentData = reportService.findAllReport();
+        // 返信を全件取得
+        List<CommentForm> comments = commentService.findAllComment();
         //画面遷移先を指定
         mav.setViewName("/top");
         //投稿データオブジェクトを保管
         mav.addObject("contents", contentData);
+        //返信データオブジェクトを保管
+        mav.addObject("comments", comments);
+
+        // 返信用の空のFormを準備し保管
+        CommentForm commentForm = new CommentForm();
+        mav.addObject("formModel", commentForm);
         return mav;
     }
 
@@ -90,5 +103,50 @@ public class ForumController {
         reportForm.setId(id);
         reportService.saveReport(reportForm);
         return new ModelAndView("redirect:/");
+    }
+
+    /*
+     * 返信機能
+     */
+    @PostMapping("/comment/{reportId}")
+    public ModelAndView addComment(@ModelAttribute("formModel") CommentForm commentForm, @PathVariable Integer reportId){
+        commentForm.setReportId(reportId);
+        commentService.saveComment(commentForm);
+        return  new ModelAndView("redirect:/");
+    }
+
+    /*
+     * 返信編集画面表示
+     */
+    @GetMapping("/comment/edit/{id}")
+    public ModelAndView editComment(@PathVariable Integer id){
+        ModelAndView mav = new ModelAndView();
+
+        //idでコメント情報を取得
+        CommentForm commentForm = commentService.editComment(id);
+
+        mav.setViewName("/edit-comment");
+        mav.addObject("formModel", commentForm);
+
+        return mav;
+    }
+
+    /*
+     * 返信編集処理
+     */
+    @PutMapping("/comment/update/{id}")
+    public ModelAndView updateComment(@ModelAttribute("formModel") CommentForm commentForm, @PathVariable Integer id) {
+        commentForm.setId(id);
+        commentService.saveComment(commentForm);
+        return new ModelAndView("redirect:/");
+    }
+
+    /*
+     * 返信削除機能
+     */
+    @DeleteMapping("/comment/delete/{id}")
+    public ModelAndView deleteComment(@PathVariable Integer id){
+        commentService.deleteComment(id);
+        return  new ModelAndView("redirect:/");
     }
 }
