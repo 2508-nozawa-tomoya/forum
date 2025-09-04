@@ -23,7 +23,7 @@ public class ReportService {
      * レコード全件取得
      */
     public List<ReportForm> findAllReport(){
-        List<Report> results = reportRepository.findAllByOrderByIdDesc();
+        List<Report> results = reportRepository.findAllByOrderByUpdatedDateDesc();
         List<ReportForm> reports = setReportForm(results);
         return reports;
     }
@@ -52,7 +52,7 @@ public class ReportService {
         }
         Timestamp end = Timestamp.valueOf(stringEnd);
 
-            results = reportRepository.findByCreatedDateBetween(start, end);
+            results = reportRepository.findByCreatedDateBetweenOrderByUpdatedDateDesc(start, end);
 
         List<ReportForm> reports = setReportForm(results);
         return reports;
@@ -95,6 +95,7 @@ public class ReportService {
             report.setId(result.getId());
             report.setContent(result.getContent());
             report.setCreatedDate(result.getCreatedDate());
+            report.setUpdatedDate(result.getUpdatedDate());
             reports.add(report);
         }
         return reports;

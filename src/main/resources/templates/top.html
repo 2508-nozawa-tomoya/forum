@@ -32,6 +32,9 @@
         <div>
             投稿日：<span th:text="${#dates.format(content.createdDate, 'yyyy-MM-dd hh:mm:ss')}"></span>
         </div>
+        <div>
+            更新日：<span th:text="${#dates.format(content.updatedDate, 'yyyy-MM-dd HH:mm:ss')}" ></span>
+        </div>
         <form th:action="@{/delete/{id}(id=${content.id})}" method="post">
             <input type="submit" value="削除">
         </form>
@@ -52,7 +55,9 @@
         <div th:each="comment : ${comments}">
             <div th:if="${content.id == comment.reportId}">
                 <div class="text">
-                    コメント : <span th:text="${comment.content}"></span> 投稿日：<span th:text="${#dates.format(comment.createdDate, 'yyyy/MM/dd HH:mm:ss')}" ></span>
+                    コメント : <span th:text="${comment.content}"></span>
+                    投稿日：<span th:text="${#dates.format(comment.createdDate, 'yyyy-MM-dd HH:mm:ss')}" ></span>
+                    更新日：<span th:text="${#dates.format(comment.updatedDate, 'yyyy-MM-dd HH:mm:ss')}" ></span>
                 </div>
                 <!--削除ボタン-->
                 <form th:action="@{/comment/delete/{id}(id=${comment.id})}" th:method="delete">

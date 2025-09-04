@@ -5,9 +5,9 @@ import com.example.forum.controller.form.ReportForm;
 import com.example.forum.service.CommentService;
 import com.example.forum.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -92,7 +92,10 @@ public class ForumController {
      * 新規投稿処理
      */
     @PostMapping("/add")
-    public ModelAndView addContent(@ModelAttribute("formModel") ReportForm reportForm){
+    public ModelAndView addContent(@ModelAttribute("formModel") @Validated ReportForm reportForm, BindingResult result){
+       if(result.hasErrors()){
+           return new ModelAndView("redirect:/new");
+       }
         //投稿テーブルに格納
         reportService.saveReport(reportForm);
         //rootへリダイレクト
@@ -141,8 +144,9 @@ public class ForumController {
      */
     @PostMapping("/comment/{reportId}")
     public ModelAndView addComment(@ModelAttribute("formModel") CommentForm commentForm, @PathVariable Integer reportId){
+        Timestamp ts = new Timestamp(System.currentTimeMillis());
         commentForm.setReportId(reportId);
-        commentService.saveComment(commentForm);
+        commentService.saveComment(commentForm, ts);
         return  new ModelAndView("redirect:/");
     }
 
@@ -170,7 +174,7 @@ public class ForumController {
         Timestamp ts = new Timestamp(System.currentTimeMillis());
         commentForm.setId(id);
         commentForm.setUpdatedDate(ts);
-        commentService.saveComment(commentForm);
+        commentService.saveComment(commentForm, ts);
         return new ModelAndView("redirect:/");
     }
 

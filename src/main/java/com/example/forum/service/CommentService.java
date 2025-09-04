@@ -2,10 +2,13 @@ package com.example.forum.service;
 
 import com.example.forum.controller.form.CommentForm;
 import com.example.forum.repository.CommentRepository;
+import com.example.forum.repository.ReportRepository;
 import com.example.forum.repository.entity.Comment;
+import com.example.forum.repository.entity.Report;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,11 +16,19 @@ import java.util.List;
 public class CommentService {
     @Autowired
     CommentRepository commentRepository;
+    @Autowired
+    ReportRepository reportRepository;
 
     /*
      * コメント追加
      */
-    public void saveComment(CommentForm commentForm){
+    public void saveComment(CommentForm commentForm, Timestamp ts){
+        List<Report> results = new ArrayList<>();
+        results.add((Report)reportRepository.findById(commentForm.getReportId()).orElse(null));
+        Report report = results.get(0);
+        report.setUpdatedDate(ts);
+        reportRepository.save(report);
+
         Comment saveComment = setCommentEntity(commentForm);
         commentRepository.save(saveComment);
     }
@@ -26,7 +37,7 @@ public class CommentService {
      *　返信全件取得
      */
     public List<CommentForm> findAllComment(){
-        List<Comment> results = commentRepository.findAll();
+        List<Comment> results = commentRepository.findAllByOrderByUpdatedDateDesc();
         List<CommentForm> commnets = setCommentForm(results);
         return commnets;
     }
@@ -74,6 +85,7 @@ public class CommentService {
             comment.setContent(result.getContent());
             comment.setReportId(result.getReportId());
             comment.setCreatedDate(result.getCreatedDate());
+            comment.setUpdatedDate(result.getUpdatedDate());
             comments.add(comment);
         }
         return comments;
