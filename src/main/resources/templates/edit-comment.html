@@ -16,6 +16,7 @@
                 <textarea class="tweet-box" th:field="*{content}" size="20" maxlength="200"></textarea><br />
                 <input type="hidden" th:field="*{reportId}" value="${formModel.reportId}">
                 <input type="submit" value="更新" />
+                <div class="errorMessages" th:text="${errorMessage}"></div>
         </div>
     </form>
 </div>

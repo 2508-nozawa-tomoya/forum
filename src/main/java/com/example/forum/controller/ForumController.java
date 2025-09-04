@@ -1,15 +1,21 @@
 package com.example.forum.controller;
 
+
 import com.example.forum.controller.form.CommentForm;
 import com.example.forum.controller.form.ReportForm;
 import com.example.forum.service.CommentService;
 import com.example.forum.service.ReportService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -26,8 +32,10 @@ public class ForumController {
      *投稿内容表示処理
      */
     @GetMapping
-    public ModelAndView top(){
+    public ModelAndView top(Model model){
         ModelAndView mav = new ModelAndView();
+        String errorMessage = (String) model.getAttribute("errorMessage");
+        Integer errorId = (Integer) model.getAttribute("errorId");
         //投稿を全件取得
         List<ReportForm> contentData = reportService.findAllReport();
         // 返信を全件取得
@@ -38,6 +46,9 @@ public class ForumController {
         mav.addObject("contents", contentData);
         //返信データオブジェクトを保管
         mav.addObject("comments", comments);
+
+        mav.addObject("errorMessage", errorMessage);
+        mav.addObject("errorId", errorId);
 
         // 返信用の空のFormを準備し保管
         CommentForm commentForm = new CommentForm();
@@ -77,14 +88,18 @@ public class ForumController {
      *新規投稿画面表示
      */
     @GetMapping("/new")
-    public ModelAndView newContent(){
+    public ModelAndView newContent(Model model){
+
         ModelAndView mav = new ModelAndView();
+        String errorMessage = (String) model.getAttribute("errorMessage");
         //form用のからのentityを用意
         ReportForm reportForm = new ReportForm();
         //画面遷移先を指定
         mav.setViewName("/new");
         //準備した空のFormを保管
         mav.addObject("formModel", reportForm);
+
+        mav.addObject("errorMessage", errorMessage);
         return mav;
     }
 
@@ -92,8 +107,13 @@ public class ForumController {
      * 新規投稿処理
      */
     @PostMapping("/add")
-    public ModelAndView addContent(@ModelAttribute("formModel") @Validated ReportForm reportForm, BindingResult result){
+    public ModelAndView addContent(@ModelAttribute("formModel") @Validated ReportForm reportForm, BindingResult result, RedirectAttributes redirectAttributes){
        if(result.hasErrors()){
+           String errorMessage = "";
+           for(ObjectError error : result.getAllErrors()){
+               errorMessage += error.getDefaultMessage();
+           }
+           redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
            return new ModelAndView("redirect:/new");
        }
         //投稿テーブルに格納
@@ -115,7 +135,8 @@ public class ForumController {
      * 投稿編集画面表示
      */
     @GetMapping("/edit/{id}")
-    public ModelAndView editContent(@PathVariable Integer id) {
+    public ModelAndView editContent(@PathVariable Integer id, Model model) {
+        String errorMessage = (String) model.getAttribute("errorMessage");
         ModelAndView mav = new ModelAndView();
 
         //idでレコードを取得
@@ -123,6 +144,7 @@ public class ForumController {
 
         mav.setViewName("/edit");
         mav.addObject("formModel", reportForm);
+        mav.addObject("errorMessage", errorMessage);
 
         return mav;
     }
@@ -131,7 +153,16 @@ public class ForumController {
      * 投稿編集処理
      */
     @PutMapping("/update/{id}")
-    public ModelAndView updateContent(@ModelAttribute("formModel") ReportForm reportForm, @PathVariable Integer id){
+    public ModelAndView updateContent(@ModelAttribute("formModel") @Validated ReportForm reportForm, BindingResult result, @PathVariable Integer id, RedirectAttributes redirectAttributes){
+        if(result.hasErrors()){
+            String errorMessage = "";
+            for(ObjectError error : result.getAllErrors()){
+                errorMessage += error.getDefaultMessage();
+            }
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+            return new ModelAndView("redirect:/edit/{id}");
+        }
+
         Timestamp ts = new Timestamp(System.currentTimeMillis());
         reportForm.setId(id);
         reportForm.setUpdatedDate(ts);
@@ -143,7 +174,16 @@ public class ForumController {
      * 返信機能
      */
     @PostMapping("/comment/{reportId}")
-    public ModelAndView addComment(@ModelAttribute("formModel") CommentForm commentForm, @PathVariable Integer reportId){
+    public ModelAndView addComment(@ModelAttribute("formModel") @Validated CommentForm commentForm, BindingResult result, @PathVariable Integer reportId, RedirectAttributes redirectAttributes){
+        if(result.hasErrors()){
+            String errorMessage = "";
+            for(ObjectError error : result.getAllErrors()){
+                errorMessage += error.getDefaultMessage();
+            }
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+            redirectAttributes.addFlashAttribute("errorId", reportId);
+            return new ModelAndView("redirect:/");
+        }
         Timestamp ts = new Timestamp(System.currentTimeMillis());
         commentForm.setReportId(reportId);
         commentService.saveComment(commentForm, ts);
@@ -154,7 +194,8 @@ public class ForumController {
      * 返信編集画面表示
      */
     @GetMapping("/comment/edit/{id}")
-    public ModelAndView editComment(@PathVariable Integer id){
+    public ModelAndView editComment(@PathVariable Integer id, Model model){
+        String errorMessage = (String)model.getAttribute("errorMessage");
         ModelAndView mav = new ModelAndView();
 
         //idでコメント情報を取得
@@ -162,6 +203,7 @@ public class ForumController {
 
         mav.setViewName("/edit-comment");
         mav.addObject("formModel", commentForm);
+        mav.addObject("errorMessage");
 
         return mav;
     }
@@ -170,7 +212,15 @@ public class ForumController {
      * 返信編集処理
      */
     @PutMapping("/comment/update/{id}")
-    public ModelAndView updateComment(@ModelAttribute("formModel") CommentForm commentForm, @PathVariable Integer id) {
+    public ModelAndView updateComment(@ModelAttribute("formModel") @Validated CommentForm commentForm, BindingResult result, @PathVariable Integer id, RedirectAttributes redirectAttributes) {
+        if(result.hasErrors()){
+            String errorMessage = "";
+            for(ObjectError error : result.getAllErrors()){
+                errorMessage += error.getDefaultMessage();
+            }
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+            return  new ModelAndView("redirect:/comment/edit/{id}");
+        }
         Timestamp ts = new Timestamp(System.currentTimeMillis());
         commentForm.setId(id);
         commentForm.setUpdatedDate(ts);

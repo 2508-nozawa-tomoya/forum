@@ -49,6 +49,7 @@
                 <label>返信</label>
                     <textarea class="tweet-box" th:field="*{content}" size="20" maxlength="200"></textarea><br />
                 <input type="submit" value="返信" />
+                <div th:if="${errorId == content.id}" class="errorMessages" th:text="${errorMessage}"></div>
             </div>
         </form>
         <!--返信表示-->

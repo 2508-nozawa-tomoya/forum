@@ -23,11 +23,15 @@ public class CommentService {
      * コメント追加
      */
     public void saveComment(CommentForm commentForm, Timestamp ts){
-        List<Report> results = new ArrayList<>();
-        results.add((Report)reportRepository.findById(commentForm.getReportId()).orElse(null));
-        Report report = results.get(0);
-        report.setUpdatedDate(ts);
-        reportRepository.save(report);
+//        回りくどいやり方
+//        List<Report> results = new ArrayList<>();
+//        results.add((Report)reportRepository.findById(commentForm.getReportId()).orElse(null));
+//        Report report = results.get(0);
+//        report.setUpdatedDate(ts);
+//        reportRepository.save(report);
+
+        //JPQLを使ったやり方
+        reportRepository.updateUpdatedDate(ts, commentForm.getReportId());
 
         Comment saveComment = setCommentEntity(commentForm);
         commentRepository.save(saveComment);
