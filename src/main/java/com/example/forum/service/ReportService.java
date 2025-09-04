@@ -20,15 +20,6 @@ public class ReportService {
     ReportRepository reportRepository;
 
     /*
-     * レコード全件取得
-     */
-    public List<ReportForm> findAllReport(){
-        List<Report> results = reportRepository.findAllByOrderByUpdatedDateDesc();
-        List<ReportForm> reports = setReportForm(results);
-        return reports;
-    }
-
-    /*
      * 日付で絞込
      */
     public List<ReportForm> findAllReport(String startDate, String endDate){

@@ -32,12 +32,14 @@ public class ForumController {
      *投稿内容表示処理
      */
     @GetMapping
-    public ModelAndView top(Model model){
+    public ModelAndView top(Model model, HttpServletRequest request, HttpServletResponse response){
+
+        String startDate = request.getParameter("start");
+        String endDate = request.getParameter("end");
+
         ModelAndView mav = new ModelAndView();
-        String errorMessage = (String) model.getAttribute("errorMessage");
-        Integer errorId = (Integer) model.getAttribute("errorId");
         //投稿を全件取得
-        List<ReportForm> contentData = reportService.findAllReport();
+        List<ReportForm> contentData = reportService.findAllReport(startDate, endDate);
         // 返信を全件取得
         List<CommentForm> comments = commentService.findAllComment();
         //画面遷移先を指定
@@ -47,36 +49,8 @@ public class ForumController {
         //返信データオブジェクトを保管
         mav.addObject("comments", comments);
 
-        mav.addObject("errorMessage", errorMessage);
-        mav.addObject("errorId", errorId);
-
-        // 返信用の空のFormを準備し保管
-        CommentForm commentForm = new CommentForm();
-        mav.addObject("formModel", commentForm);
-        return mav;
-    }
-
-    /*
-     * 日付で投稿の絞込をしてTop画面を表示
-     */
-    @GetMapping("/date")
-    public ModelAndView sortTop(@RequestParam("start")String start, @RequestParam("end")String end){
-        ModelAndView mav = new ModelAndView();
-        //投稿を全件取得
-        List<ReportForm> contentData = reportService.findAllReport(start, end);
-        // 返信を全件取得
-        List<CommentForm> comments = commentService.findAllComment();
-        //画面遷移先を指定
-        mav.setViewName("/top");
-        //投稿データオブジェクトを保管
-        mav.addObject("contents", contentData);
-        //返信データオブジェクトを保管
-        mav.addObject("comments", comments);
-
-        //開始日時を保管
-        mav.addObject("start", start);
-        //終了日時を保管
-        mav.addObject("end", end);
+        mav.addObject("start", startDate);
+        mav.addObject("end", endDate);
 
         // 返信用の空のFormを準備し保管
         CommentForm commentForm = new CommentForm();
@@ -91,15 +65,12 @@ public class ForumController {
     public ModelAndView newContent(Model model){
 
         ModelAndView mav = new ModelAndView();
-        String errorMessage = (String) model.getAttribute("errorMessage");
         //form用のからのentityを用意
         ReportForm reportForm = new ReportForm();
         //画面遷移先を指定
         mav.setViewName("/new");
         //準備した空のFormを保管
         mav.addObject("formModel", reportForm);
-
-        mav.addObject("errorMessage", errorMessage);
         return mav;
     }
 
@@ -136,16 +107,12 @@ public class ForumController {
      */
     @GetMapping("/edit/{id}")
     public ModelAndView editContent(@PathVariable Integer id, Model model) {
-        String errorMessage = (String) model.getAttribute("errorMessage");
         ModelAndView mav = new ModelAndView();
 
         //idでレコードを取得
         ReportForm reportForm = reportService.editReport(id);
-
         mav.setViewName("/edit");
         mav.addObject("formModel", reportForm);
-        mav.addObject("errorMessage", errorMessage);
-
         return mav;
     }
 
@@ -195,7 +162,6 @@ public class ForumController {
      */
     @GetMapping("/comment/edit/{id}")
     public ModelAndView editComment(@PathVariable Integer id, Model model){
-        String errorMessage = (String)model.getAttribute("errorMessage");
         ModelAndView mav = new ModelAndView();
 
         //idでコメント情報を取得
@@ -203,7 +169,6 @@ public class ForumController {
 
         mav.setViewName("/edit-comment");
         mav.addObject("formModel", commentForm);
-        mav.addObject("errorMessage");
 
         return mav;
     }
