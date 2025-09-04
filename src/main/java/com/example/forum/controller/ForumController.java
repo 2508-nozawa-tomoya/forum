@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @Controller
@@ -37,6 +38,34 @@ public class ForumController {
         mav.addObject("contents", contentData);
         //返信データオブジェクトを保管
         mav.addObject("comments", comments);
+
+        // 返信用の空のFormを準備し保管
+        CommentForm commentForm = new CommentForm();
+        mav.addObject("formModel", commentForm);
+        return mav;
+    }
+
+    /*
+     * 日付で投稿の絞込をしてTop画面を表示
+     */
+    @GetMapping("/date")
+    public ModelAndView sortTop(@RequestParam("start")String start, @RequestParam("end")String end){
+        ModelAndView mav = new ModelAndView();
+        //投稿を全件取得
+        List<ReportForm> contentData = reportService.findAllReport(start, end);
+        // 返信を全件取得
+        List<CommentForm> comments = commentService.findAllComment();
+        //画面遷移先を指定
+        mav.setViewName("/top");
+        //投稿データオブジェクトを保管
+        mav.addObject("contents", contentData);
+        //返信データオブジェクトを保管
+        mav.addObject("comments", comments);
+
+        //開始日時を保管
+        mav.addObject("start", start);
+        //終了日時を保管
+        mav.addObject("end", end);
 
         // 返信用の空のFormを準備し保管
         CommentForm commentForm = new CommentForm();
@@ -100,7 +129,9 @@ public class ForumController {
      */
     @PutMapping("/update/{id}")
     public ModelAndView updateContent(@ModelAttribute("formModel") ReportForm reportForm, @PathVariable Integer id){
+        Timestamp ts = new Timestamp(System.currentTimeMillis());
         reportForm.setId(id);
+        reportForm.setUpdatedDate(ts);
         reportService.saveReport(reportForm);
         return new ModelAndView("redirect:/");
     }
@@ -136,7 +167,9 @@ public class ForumController {
      */
     @PutMapping("/comment/update/{id}")
     public ModelAndView updateComment(@ModelAttribute("formModel") CommentForm commentForm, @PathVariable Integer id) {
+        Timestamp ts = new Timestamp(System.currentTimeMillis());
         commentForm.setId(id);
+        commentForm.setUpdatedDate(ts);
         commentService.saveComment(commentForm);
         return new ModelAndView("redirect:/");
     }

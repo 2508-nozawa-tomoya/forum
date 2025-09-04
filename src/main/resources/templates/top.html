@@ -13,6 +13,14 @@
     <a href="/new">
         <button class="new-button" type="button">新規投稿</button>
     </a>
+    <!--日付で絞込-->
+    <form action="/date" method="get">
+        日付：
+        <input type="date" name="start" th:value="${start}">
+        ~
+        <input type="date" name="end" th:value="${end}">
+        <input type="submit" value="絞り込み">
+    </form>
     <!--投稿表示-->
     <div class="message-icon" th:each="content : ${contents}">
         <div>
@@ -20,6 +28,9 @@
         </div>
         <div class="text">
             投稿 : <span th:text="${content.content}"/>
+        </div>
+        <div>
+            投稿日：<span th:text="${#dates.format(content.createdDate, 'yyyy-MM-dd hh:mm:ss')}"></span>
         </div>
         <form th:action="@{/delete/{id}(id=${content.id})}" method="post">
             <input type="submit" value="削除">
@@ -41,7 +52,7 @@
         <div th:each="comment : ${comments}">
             <div th:if="${content.id == comment.reportId}">
                 <div class="text">
-                    コメント : <span th:text="${comment.content}"></span>
+                    コメント : <span th:text="${comment.content}"></span> 投稿日：<span th:text="${#dates.format(comment.createdDate, 'yyyy/MM/dd HH:mm:ss')}" ></span>
                 </div>
                 <!--削除ボタン-->
                 <form th:action="@{/comment/delete/{id}(id=${comment.id})}" th:method="delete">

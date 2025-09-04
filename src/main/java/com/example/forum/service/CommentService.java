@@ -56,6 +56,9 @@ public class CommentService {
         comment.setId(commentForm.getId());
         comment.setContent(commentForm.getContent());
         comment.setReportId(commentForm.getReportId());
+        if(commentForm.getUpdatedDate() != null){
+            comment.setUpdatedDate(commentForm.getUpdatedDate());
+        }
         return comment;
     }
 
@@ -70,6 +73,7 @@ public class CommentService {
             comment.setId(result.getId());
             comment.setContent(result.getContent());
             comment.setReportId(result.getReportId());
+            comment.setCreatedDate(result.getCreatedDate());
             comments.add(comment);
         }
         return comments;

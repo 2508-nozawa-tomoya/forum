@@ -4,6 +4,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+
+import java.sql.Timestamp;
+import java.util.Date;
+
+
 @Getter
 @Setter
 @Entity
@@ -19,4 +24,10 @@ public class Comment {
 
     @Column
     private int reportId;
+
+    @Column(insertable = false, updatable = false)
+    private Timestamp createdDate;
+
+    @Column(insertable = false, updatable = true)
+    private Timestamp updatedDate;
 }

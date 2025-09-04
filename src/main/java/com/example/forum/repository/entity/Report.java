@@ -9,6 +9,10 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.Timestamp;
+import java.util.Date;
+
+
 @Setter
 @Getter
 @Entity
@@ -21,4 +25,10 @@ public class Report {
 
     @Column
     private String content;
+
+    @Column(insertable = false, updatable = false)
+    private Timestamp createdDate;
+
+    @Column(insertable = false, updatable = true)
+    private Timestamp updatedDate;
 }
