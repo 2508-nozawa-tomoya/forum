@@ -1,8 +1,8 @@
 package com.example.forum.service;
 
 import com.example.forum.controller.form.CommentForm;
-import com.example.forum.repository.CommentRepository;
-import com.example.forum.repository.ReportRepository;
+import com.example.forum.mapper.CommentMapper;
+import com.example.forum.mapper.ReportMapper;
 import com.example.forum.repository.entity.Comment;
 import com.example.forum.repository.entity.Report;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +15,12 @@ import java.util.List;
 @Service
 public class CommentService {
     @Autowired
-    CommentRepository commentRepository;
+    CommentMapper commentMapper;
     @Autowired
-    ReportRepository reportRepository;
+    ReportMapper reportMapper;
 
     /*
-     * コメント追加
+     * コメント追加 コメント追加はMybatis移行、投稿のupdatedDateはまだJPA
      */
     public void saveComment(CommentForm commentForm, Timestamp ts){
 //        回りくどいやり方
@@ -30,37 +30,56 @@ public class CommentService {
 //        report.setUpdatedDate(ts);
 //        reportRepository.save(report);
 
-        //JPQLを使ったやり方
-        reportRepository.updateUpdatedDate(ts, commentForm.getReportId());
+//        JPQLを使ったやり方
+//        reportRepository.updateUpdatedDate(ts, commentForm.getReportId());
+
+        Report report = new Report();
+        report.setId(commentForm.getReportId());
+        report.setUpdatedDate(ts);
+        reportMapper.updateUpdatedDate(report);
 
         Comment saveComment = setCommentEntity(commentForm);
-        commentRepository.save(saveComment);
+        commentMapper.insertComment(saveComment);
     }
 
     /*
-     *　返信全件取得
+     *　返信全件取得 Mybatisへ移行済み
      */
     public List<CommentForm> findAllComment(){
-        List<Comment> results = commentRepository.findAllByOrderByUpdatedDateDesc();
+        List<Comment> results = commentMapper.getAll();
         List<CommentForm> commnets = setCommentForm(results);
         return commnets;
     }
 
     /*
-     * idで返信情報を取得
+     * idで返信情報を取得(コメント編集画面表示用) MyBatisへ移行済み
      */
     public CommentForm editComment(Integer id){
-        List<Comment> results = new ArrayList<>();
-        results.add((Comment)commentRepository.findById(id).orElse(null));
+        List<Comment> results = commentMapper.getById(id);
         List<CommentForm> comments = setCommentForm(results);
         return comments.get(0);
     }
 
     /*
-     * コメント削除
+     *　コメント編集 MyBatisへ移行済み　投稿のupdatedDateはまだJPA
+     */
+    public void updateComment(CommentForm commentForm, Timestamp ts){
+
+        Report report = new Report();
+        report.setId(commentForm.getReportId());
+        report.setUpdatedDate(ts);
+        reportMapper.updateUpdatedDate(report);
+
+        Comment saveComment = setCommentEntity(commentForm);
+        commentMapper.updateComment(saveComment);
+
+    }
+
+    /*
+     * コメント削除 MyBatis移行済み
      */
     public void deleteComment(Integer id){
-        commentRepository.deleteById(id);
+        commentMapper.deleteComment(id);
     }
 
     /*

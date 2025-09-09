@@ -1,6 +1,7 @@
 package com.example.forum.service;
 
 import com.example.forum.controller.form.ReportForm;
+import com.example.forum.mapper.ReportMapper;
 import com.example.forum.repository.ReportRepository;
 import com.example.forum.repository.entity.Report;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,7 @@ import java.util.List;
 @Service
 public class ReportService {
     @Autowired
-    ReportRepository reportRepository;
+    ReportMapper reportMapper;
 
     /*
      * 日付で絞込
@@ -43,7 +44,7 @@ public class ReportService {
         }
         Timestamp end = Timestamp.valueOf(stringEnd);
 
-            results = reportRepository.findByCreatedDateBetweenOrderByUpdatedDateDesc(start, end);
+            results = reportMapper.getAll(start, end);
 
         List<ReportForm> reports = setReportForm(results);
         return reports;
@@ -54,24 +55,32 @@ public class ReportService {
      */
     public void saveReport(ReportForm reqReport){
         Report saveReport = setReportEntity(reqReport);
-        reportRepository.save(saveReport);
+        reportMapper.insertReport(saveReport);
     }
 
     /*
      *　投稿削除
      */
     public void deleteReport(Integer id){
-        reportRepository.deleteById(id);
+
+        reportMapper.deleteReport(id);
     }
 
     /*
-     * idでレコードを取得
+     * idでレコードを取得（投稿変種画面表示用）
      */
     public ReportForm editReport(Integer id){
-        List<Report> results = new ArrayList<>();
-        results.add((Report)reportRepository.findById(id).orElse(null));
+        List<Report> results = reportMapper.getById(id);
         List<ReportForm> reports = setReportForm(results);
         return reports.get(0);
+    }
+
+    /*
+     * 投稿編集登録
+     */
+    public void updateReport(ReportForm reportForm){
+        Report saveReport = setReportEntity(reportForm);
+        reportMapper.updateReport(saveReport);
     }
 
     /*

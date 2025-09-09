@@ -6,7 +6,6 @@ import com.example.forum.controller.form.ReportForm;
 import com.example.forum.service.CommentService;
 import com.example.forum.service.ReportService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,7 +31,7 @@ public class ForumController {
      *投稿内容表示処理
      */
     @GetMapping
-    public ModelAndView top(Model model, HttpServletRequest request, HttpServletResponse response){
+    public ModelAndView top(HttpServletRequest request){
 
         String startDate = request.getParameter("start");
         String endDate = request.getParameter("end");
@@ -66,11 +65,14 @@ public class ForumController {
 
         ModelAndView mav = new ModelAndView();
         //form用のからのentityを用意
-        ReportForm reportForm = new ReportForm();
+        if(!model.containsAttribute("formModel")){
+            ReportForm reportForm = new ReportForm();
+            mav.addObject("formModel", reportForm);
+        }
         //画面遷移先を指定
         mav.setViewName("/new");
         //準備した空のFormを保管
-        mav.addObject("formModel", reportForm);
+
         return mav;
     }
 
@@ -80,11 +82,16 @@ public class ForumController {
     @PostMapping("/add")
     public ModelAndView addContent(@ModelAttribute("formModel") @Validated ReportForm reportForm, BindingResult result, RedirectAttributes redirectAttributes){
        if(result.hasErrors()){
-           String errorMessage = "";
-           for(ObjectError error : result.getAllErrors()){
-               errorMessage += error.getDefaultMessage();
-           }
-           redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+//           bindingresultからメッセージを取り出す方法
+//           String errorMessage = "";
+//           for(ObjectError error : result.getAllErrors()){
+//               errorMessage += error.getDefaultMessage();
+//           }
+//           redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+
+           //bindingresultをそのままリダイレクト先へ渡す方法
+           redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.formModel", result);
+           redirectAttributes.addFlashAttribute("formModel", reportForm);
            return new ModelAndView("redirect:/new");
        }
         //投稿テーブルに格納
@@ -106,7 +113,7 @@ public class ForumController {
      * 投稿編集画面表示
      */
     @GetMapping("/edit/{id}")
-    public ModelAndView editContent(@PathVariable Integer id, Model model) {
+    public ModelAndView editContent(@PathVariable Integer id) {
         ModelAndView mav = new ModelAndView();
 
         //idでレコードを取得
@@ -133,7 +140,7 @@ public class ForumController {
         Timestamp ts = new Timestamp(System.currentTimeMillis());
         reportForm.setId(id);
         reportForm.setUpdatedDate(ts);
-        reportService.saveReport(reportForm);
+        reportService.updateReport(reportForm);
         return new ModelAndView("redirect:/");
     }
 
@@ -161,7 +168,7 @@ public class ForumController {
      * 返信編集画面表示
      */
     @GetMapping("/comment/edit/{id}")
-    public ModelAndView editComment(@PathVariable Integer id, Model model){
+    public ModelAndView editComment(@PathVariable Integer id){
         ModelAndView mav = new ModelAndView();
 
         //idでコメント情報を取得
@@ -189,7 +196,7 @@ public class ForumController {
         Timestamp ts = new Timestamp(System.currentTimeMillis());
         commentForm.setId(id);
         commentForm.setUpdatedDate(ts);
-        commentService.saveComment(commentForm, ts);
+        commentService.updateComment(commentForm, ts);
         return new ModelAndView("redirect:/");
     }
 

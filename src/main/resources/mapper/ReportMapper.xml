@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.forum.mapper.ReportMapper">
+    <resultMap id="ReportResult" type="com.example.forum.repository.entity.Report">
+        <result column="id" property="id" />
+        <result column="content" property="content" />
+        <result column="created_date" property="createdDate" />
+        <result column="updated_date" property="updatedDate" />
+    </resultMap>
+    <select id="getAll" resultMap="ReportResult" >
+        select id, content, created_date, updated_date
+        from report
+        where created_date between #{start} and #{end}
+        order by updated_date desc;
+    </select>
+    <select id="getById" resultMap="ReportResult" parameterType="int">
+        select id, content, created_date, updated_date
+        from report
+        where id = #{id}
+    </select>
+    <insert id="insertReport" parameterType="com.example.forum.repository.entity.Report">
+        insert into report
+        (content, created_date, updated_date)
+        values
+        (#{content}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    </insert>
+    <update id="updateReport" parameterType="com.example.forum.repository.entity.Report">
+        update report
+        set content = #{content}, updated_date = #{updatedDate}
+        where id = #{id}
+    </update>
+    <update id="updateUpdatedDate" parameterType="com.example.forum.repository.entity.Report">
+        update report
+        set updated_date = #{updatedDate}
+        where id = #{id}
+    </update>
+    <delete id="deleteReport" parameterType="int">
+        delete from report where id = #{id}
+    </delete>
+</mapper>

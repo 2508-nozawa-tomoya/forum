@@ -16,6 +16,7 @@
                 <textarea class="tweet-box" th:field="*{content}" size="20" maxlength="200"></textarea><br/>
             <input type="submit" value="投稿"/>
             <div class="errorMessages" th:text="${errorMessage}"></div>
+            <div class="errorMessages" th:if="${#fields.hasErrors('content')}" th:errors="*{content}"></div>
         </div>
     </form>
 </div>
